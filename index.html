@@ -774,10 +774,6 @@ footer {
 </div>
 
 <script>
-/* ==========================================
-   CONFIGURATION & GOOGLE DRIVE SYNC
-========================================== */
-
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNNiyvnPThUNcPU8rx4WrSuXzGfZv90cJza2J4jkgsj3IlnO0tzvbrQt5iXgoEKVko/exec";
 const ANNIVERSARY = "2026-09-12T00:00:00";
 
@@ -809,7 +805,6 @@ const defaultState = {
   letters:[]
 };
 
-// Google Sheet မှ Data များ ဆွဲယူခြင်း
 async function getAll(){
   try {
     const res = await fetch(SCRIPT_URL + '?action=getAll&t=' + Date.now());
@@ -820,7 +815,6 @@ async function getAll(){
   } catch(e) { console.error("Load Error:", e); }
 }
 
-// ၅ စက္ကန့်တစ်ခါ အလိုအလျောက် Auto-Sync လုပ်ပေးမည့်စနစ်
 async function startAutoSync() {
   setInterval(async () => {
     const dot = document.getElementById('syncDot');
@@ -835,7 +829,6 @@ async function startAutoSync() {
   }, 5000);
 }
 
-// Google Sheet သို့ အချက်အလက်များ သိမ်းဆည်းခြင်း
 async function put(key,value){
   try {
     await fetch(SCRIPT_URL, {
@@ -851,7 +844,6 @@ async function saveKey(k,v){
   await put(k,v);
 }
 
-// Google Drive သို့ ပုံများ တင်ခြင်း
 async function uploadFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -876,10 +868,6 @@ async function uploadFile(file) {
     reader.readAsDataURL(file);
   });
 }
-
-/* ==========================================
-   LOCK SCREEN
-========================================== */
 
 function unlock() {
   const code = document.getElementById("passcode").value;
@@ -916,10 +904,6 @@ async function initApp() {
   }
 }
 
-/* ==========================================
-   NAVIGATION
-========================================== */
-
 function showPage(id,button) {
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.getElementById(id).classList.add("active");
@@ -936,46 +920,6 @@ function showPage(id,button) {
 
   window.scrollTo({top:0,behavior:"smooth"});
 }
-
-/* ==========================================
-   IMAGE HANDLING
-========================================== */
-
-function processImage(file) {
-  return new Promise((resolve,reject)=>{
-    if(!file || !file.type.startsWith("image/")) {
-      reject(new Error("Please select an image"));
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = e=>{
-      const img = new Image();
-
-      img.onload = ()=>{
-        const max = 1200;
-        const scale = Math.min(1,max/Math.max(img.width,img.height));
-        const canvas = document.createElement("canvas");
-        canvas.width=Math.round(img.width*scale);
-        canvas.height=Math.round(img.height*scale);
-
-        canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
-        resolve(canvas.toDataURL("image/jpeg",.75));
-      };
-
-      img.onerror = reject;
-      img.src=e.target.result;
-    };
-
-    reader.onerror=reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-/* ==========================================
-   HOME / BANNER & PROFILES
-========================================== */
 
 async function uploadBanner(event) {
   const file=event.target.files[0];
@@ -1084,10 +1028,6 @@ function deleteFuture(index) {
   renderHome();
 }
 
-/* ==========================================
-   LOVE COUNTER
-========================================== */
-
 function calendarDuration(start,end) {
   let years=end.getFullYear()-start.getFullYear();
   let months=end.getMonth()-start.getMonth();
@@ -1131,10 +1071,6 @@ function updateCounter() {
 
 setInterval(updateCounter,1000);
 updateCounter();
-
-/* ==========================================
-   LOVE ALARM
-========================================== */
 
 const alarm=document.getElementById("alarmButton");
 let alarmTimer=null;
@@ -1206,10 +1142,6 @@ alarm.addEventListener("pointerdown",e=>{
 ["pointerup","pointerleave","pointercancel"].forEach(event=>{
   alarm.addEventListener(event,stopAlarm);
 });
-
-/* ==========================================
-   PHOTO ALBUMS
-========================================== */
 
 function createAlbum() {
   const name=prompt("Give our new album a name ♡");
@@ -1368,10 +1300,6 @@ function deletePhoto(index) {
   renderPhotos();
 }
 
-/* ==========================================
-   LOVE LETTERS
-========================================== */
-
 async function saveLetter() {
   const from=document.getElementById("letterFrom").value;
   const to=document.getElementById("letterTo").value;
@@ -1450,10 +1378,6 @@ function deleteLetter(id) {
   renderLetters();
 }
 
-/* ==========================================
-   GENERAL HELPERS
-========================================== */
-
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g,char=>({
     "&":"&amp;",
@@ -1470,7 +1394,6 @@ function renderAll() {
   renderLetters();
   updateCounter();
 }
-
 </script>
 </body>
 </html>
