@@ -17,7 +17,9 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 .lock p{color:var(--muted);font-size:13px}.lock input{width:100%;padding:14px;border:1px solid var(--line);border-radius:14px;text-align:center;letter-spacing:7px;margin:12px 0;outline:none}
 .primary,.soft,.danger{border:0;border-radius:13px;padding:11px 17px;font-weight:600}.primary{background:var(--rose);color:white}.soft{background:#f4eaf0;color:var(--rose)}.danger{background:#fff0f0;color:#b75d68}
 .app{display:none;min-height:100vh}.sidebar{position:fixed;inset:0 auto 0 0;width:245px;padding:30px 19px;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:5}
-.brand{font:40px 'Allura';color:var(--rose);text-align:center;margin:0 0 4px}.brand-sub{text-align:center;font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:38px}
+.brand{font:40px 'Allura';color:var(--rose);text-align:center;margin:0 0 4px}.brand-sub{text-align:center;font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:38px; display:flex; justify-content:center; align-items:center; gap:6px}
+.sync-dot{width:8px;height:8px;background:#ccc;border-radius:50%;box-shadow:0 0 5px #ccc;transition:0.3s}
+.sync-dot.active{background:#83c5be;box-shadow:0 0 8px #83c5be}
 .nav-label{font-size:10px;letter-spacing:2px;color:#bd9eaa;margin:12px 12px}.nav-btn{border:0;background:transparent;color:#8e7480;text-align:left;padding:13px 14px;border-radius:13px;margin:3px 0;font-size:14px}.nav-btn.active,.nav-btn:hover{background:#f4eaf0;color:var(--rose)}
 .sidebar-bottom{margin-top:auto;font-size:11px;color:#b89eaa;text-align:center;line-height:1.8}
 main{margin-left:245px;padding:38px clamp(18px,4vw,58px) 60px;max-width:1500px}
@@ -51,7 +53,7 @@ h1,h2,h3,p{margin-top:0}h1{font:clamp(38px,5vw,58px) 'Cormorant Garamond';font-w
 </div>
 <div class="app" id="app">
  <aside class="sidebar">
-  <div class="brand">Thel & Kokoe</div><div class="brand-sub">OUR LITTLE WORLD</div>
+  <div class="brand">Thel & Kokoe</div><div class="brand-sub">OUR LITTLE WORLD <div class="sync-dot" id="syncDot" title="Sync Status"></div></div>
   <div class="nav-label">OUR SPACE</div>
   <button class="nav-btn active" data-page="home" onclick="goPage('home')"><span>⌂</span>Home</button>
   <button class="nav-btn" data-page="days" onclick="goPage('days')"><span>♡</span>Our Days</button>
@@ -60,7 +62,7 @@ h1,h2,h3,p{margin-top:0}h1{font:clamp(38px,5vw,58px) 'Cormorant Garamond';font-w
   <div class="sidebar-bottom">made with love, for two ♡<br><button class="soft" onclick="lockAgain()">Lock our world</button></div>
  </aside>
  <main>
-  <div class="mobile-title">Thel & Kokoe ♡</div>
+  <div class="mobile-title">Thel & Kokoe ♡ <span class="sync-dot" id="syncDotMobile"></span></div>
   <section class="page active" id="page-home">
    <div class="hero">
     <div class="hero-copy"><div class="eyebrow">A LITTLE PLACE FOR US</div><h1>Our Little<br>World.</h1><div class="script">Thel & Kokoe ♡</div><p class="sub">A collection of our people, plans, memories and all the little things that make us — us.</p><button class="soft" onclick="chooseImage('couplePhoto')">Change our photo ♡</button><input hidden type="file" id="couplePhoto" accept="image/*" onchange="saveSingleImage(event,'couplePhotoData')"></div>
@@ -95,12 +97,12 @@ h1,h2,h3,p{margin-top:0}h1{font:clamp(38px,5vw,58px) 'Cormorant Garamond';font-w
 <div class="modal" id="photoModal"><div class="modal-card"><div class="modal-head"><h2>Add a memory</h2><button class="close" onclick="closeModal('photoModal')">×</button></div><form id="photoForm"><div class="form-row"><label>Choose photo</label><input id="photoFile" type="file" accept="image/*" required></div><div class="form-row"><label>Note under your Polaroid</label><textarea id="photoNote" placeholder="A little note about this memory..."></textarea></div><div class="form-row"><label>Font style</label><select id="photoFont"><option value="Allura">Soft script — Allura</option><option value="Cormorant Garamond">Editorial — Cormorant</option><option value="Manrope">Minimal — Manrope</option></select></div><button class="primary" type="submit">Save memory</button></form></div></div>
 <div class="modal" id="letterModal"><div class="modal-card"><div class="modal-head"><h2>Leave a little letter ♡</h2><button class="close" onclick="closeModal('letterModal')">×</button></div><form id="letterForm"><div class="form-grid"><div class="form-row"><label>From</label><select id="letterFrom"><option>Thel</option><option>Kokoe</option></select></div><div class="form-row"><label>To</label><select id="letterTo"><option>Kokoe</option><option>Thel</option></select></div></div><div class="form-row"><label>Your message</label><textarea id="letterBody" required placeholder="There's something I want to tell you..."></textarea></div><button class="primary" type="submit">Leave this letter</button></form></div></div>
 
-<!-- FIREBASE SDKs -->
+<!-- FIREBASE SDK (For Realtime Text Data Sync) -->
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-storage-compat.js"></script>
 
 <script>
+// ၁။ အစ်ကို့ရဲ့ Firebase Config (စာသားများ သိမ်းရန်)
 const firebaseConfig = {
   apiKey: "AIzaSyCgf2Ad0H1ZB8VpFZCqh79NFvdrCW0EgqE",
   authDomain: "ahhalovecounter.firebaseapp.com",
@@ -110,10 +112,9 @@ const firebaseConfig = {
   appId: "1:678032617022:web:2aa079f20bbacccf342b6f"
 };
 
-// Firebase ကို ဖွင့်ခြင်း
+// Firebase စတင်ခြင်း
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const storage = firebase.storage();
 
 let currentAlbum = null, records = {};
 const defaults = {
@@ -122,32 +123,62 @@ const defaults = {
  albums:[],plans:[],letters:[]
 };
 
-// ၂။ Real-time Sync အလုပ်လုပ်တဲ့ အပိုင်း (The Magic)
-// Database ထဲမှာ အပြောင်းအလဲတစ်ခုခု ဖြစ်တာနဲ့ ဒီ Code က အလိုလို အလုပ်လုပ်ပြီး Website ကို Refresh လုပ်ပေးပါမယ်
+// ၂။ Real-time Sync (Firestore) - ဘာပြောင်းပြောင်း ချက်ချင်းသိပြီး Update လုပ်မည့်အပိုင်း
 db.collection('thel_kokoe_world').onSnapshot((snapshot) => {
+  // Sync အလုပ်လုပ်ကြောင်း အစိမ်းရောင်မီးလေး လင်းပြပါမည်
+  document.getElementById('syncDot').classList.add('active');
+  document.getElementById('syncDotMobile').classList.add('active');
+
   snapshot.docs.forEach(doc => { records[doc.id] = doc.data().value; });
   
-  // အကယ်၍ အသစ်စသုံးတာဆိုရင် defaults လေးတွေ ဖြည့်ပေးမယ်
   for(const [k,v] of Object.entries(defaults)) {
     if(records[k] === undefined) records[k] = v;
   }
   
-  renderAll(); // Data အသစ်ဝင်လာတာနဲ့ ချက်ချင်း UI ပေါ်မှာ ပြပေးမယ်
+  renderAll(); // အပြောင်းအလဲရှိတိုင်း UI ပေါ်ချက်ချင်းပေါ်စေသည်
 }, (error) => {
   console.error("Firebase Sync Error: ", error);
+  document.getElementById('syncDot').classList.remove('active');
+  document.getElementById('syncDotMobile').classList.remove('active');
 });
 
-// ၃။ Data တွေကို Firebase ဆီ ပို့သိမ်းတဲ့ အပိုင်း
+// ၃။ Firebase သို့ Data များ ရေးသွင်းခြင်း (Sync လုပ်ခြင်း)
 async function save(k, v) {
   records[k] = v;
-  await db.collection('thel_kokoe_world').doc(k).set({ value: v });
+  try {
+    await db.collection('thel_kokoe_world').doc(k).set({ value: v });
+  } catch (err) {
+    alert("Database သို့ သိမ်းဆည်းရန် ခွင့်ပြုချက်မရှိပါ။ Firebase Rules ကို true ဟု ပြင်ထားရန် မေ့နေပါသလား?");
+    console.error(err);
+  }
 }
 
-// ၄။ ဓာတ်ပုံတွေကို Firebase Storage ဆီ တင်တဲ့ အပိုင်း
-async function uploadFile(file, path) {
-  const ref = storage.ref(path);
-  await ref.put(file);
-  return await ref.getDownloadURL();
+// ၄။ Google Drive သို့ ဓာတ်ပုံများ သိမ်းဆည်းခြင်း
+async function uploadFile(file) {
+  // အစ်ကို့ရဲ့ Google Apps Script URL 
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNNiyvnPThUNcPU8rx4WrSuXzGfZv90cJza2J4jkgsj3IlnO0tzvbrQt5iXgoEKVko/exec"; 
+  
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64Str = reader.result.split(',')[1];
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            base64: base64Str,
+            mimeType: file.type,
+            filename: file.name || ('memory_' + Date.now() + '.jpg')
+          })
+        });
+        const data = await res.json();
+        if(data.url) resolve(data.url);
+        else reject(data.error);
+      } catch(e) { reject(e); }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 // ၅။ UI & Click လုပ်ဆောင်ချက်များ
@@ -170,8 +201,8 @@ async function saveSingleImage(e,key){
   el.style.opacity = '0.5';
   
   try {
-    const url = await uploadFile(f, 'images/' + key + '_' + Date.now());
-    await save(key, url); // ဒီနေရာမှာ save တာနဲ့ onSnapshot ကနေ အလိုလို Sync ဖြစ်သွားမယ်
+    const url = await uploadFile(f);
+    await save(key, url);
   } catch(err) {
     alert("ဓာတ်ပုံတင်ခြင်း မအောင်မြင်ပါ - " + err.message);
   }
@@ -212,7 +243,7 @@ document.getElementById('photoForm').onsubmit=async e=>{
   submitBtn.disabled = true;
 
   try {
-    const url = await uploadFile(f, 'albums/' + currentAlbum + '/' + crypto.randomUUID());
+    const url = await uploadFile(f);
     const pics = [...(records['photos_'+currentAlbum]||[])];
     pics.push({id:crypto.randomUUID(),image:url,note:photoNote.value,font:photoFont.value});
     await save('photos_'+currentAlbum, pics);
