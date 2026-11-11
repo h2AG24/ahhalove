@@ -108,10 +108,10 @@ const defaults = {
  albums:[],plans:[],letters:[]
 };
 
-// ၁။ Google Sheet မှ Data များ ဆွဲယူခြင်း
+// ၁။ Google Sheet မှ Data များ ဆွဲယူခြင်း (Cache ရှောင်ရန် Timestamp ထည့်ထားသည်)
 async function getAll(){
   try {
-    const res = await fetch(SCRIPT_URL + '?action=getAll');
+    const res = await fetch(SCRIPT_URL + '?action=getAll&t=' + Date.now());
     const data = await res.json();
     for(let key in data){
       try{ records[key] = JSON.parse(data[key]); } catch(e){}
