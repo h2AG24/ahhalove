@@ -54,7 +54,7 @@ h1,h2,h3,p{margin-top:0}h1{font:clamp(38px,5vw,58px) 'Cormorant Garamond';font-w
 <div class="app" id="app">
  <aside class="sidebar">
   <div class="brand">Thel & Kokoe</div>
-  <div class="brand-sub">OUR LITTLE WORLD <div class="sync-dot" id="syncDot" title="Sync Status"></div></div>
+  <div class="brand-sub">OUR LITTLE WORLD <div class="sync-dot" id="syncDot" title="Syncing..."></div></div>
   <div class="nav-label">OUR SPACE</div>
   <button class="nav-btn active" data-page="home" onclick="goPage('home')"><span>⌂</span>Home</button>
   <button class="nav-btn" data-page="days" onclick="goPage('days')"><span>♡</span>Our Days</button>
@@ -98,23 +98,8 @@ h1,h2,h3,p{margin-top:0}h1{font:clamp(38px,5vw,58px) 'Cormorant Garamond';font-w
 <div class="modal" id="photoModal"><div class="modal-card"><div class="modal-head"><h2>Add a memory</h2><button class="close" onclick="closeModal('photoModal')">×</button></div><form id="photoForm"><div class="form-row"><label>Choose photo</label><input id="photoFile" type="file" accept="image/*" required></div><div class="form-row"><label>Note under your Polaroid</label><textarea id="photoNote" placeholder="A little note about this memory..."></textarea></div><div class="form-row"><label>Font style</label><select id="photoFont"><option value="Allura">Soft script — Allura</option><option value="Cormorant Garamond">Editorial — Cormorant</option><option value="Manrope">Minimal — Manrope</option></select></div><button class="primary" type="submit">Save memory</button></form></div></div>
 <div class="modal" id="letterModal"><div class="modal-card"><div class="modal-head"><h2>Leave a little letter ♡</h2><button class="close" onclick="closeModal('letterModal')">×</button></div><form id="letterForm"><div class="form-grid"><div class="form-row"><label>From</label><select id="letterFrom"><option>Thel</option><option>Kokoe</option></select></div><div class="form-row"><label>To</label><select id="letterTo"><option>Kokoe</option><option>Thel</option></select></div></div><div class="form-row"><label>Your message</label><textarea id="letterBody" required placeholder="There's something I want to tell you..."></textarea></div><button class="primary" type="submit">Leave this letter</button></form></div></div>
 
-<!-- FIREBASE SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCgf2Ad0H1ZB8VpFZCqh79NFvdrCW0EgqE",
-  authDomain: "ahhalovecounter.firebaseapp.com",
-  projectId: "ahhalovecounter",
-  storageBucket: "ahhalovecounter.firebasestorage.app",
-  messagingSenderId: "678032617022",
-  appId: "1:678032617022:web:2aa079f20bbacccf342b6f"
-};
-
-// Firebase ကို ဖွင့်ခြင်း
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNNiyvnPThUNcPU8rx4WrSuXzGfZv90cJza2J4jkgsj3IlnO0tzvbrQt5iXgoEKVko/exec";
 
 let currentAlbum = null, records = {};
 const defaults = {
@@ -123,38 +108,51 @@ const defaults = {
  albums:[],plans:[],letters:[]
 };
 
-// ၂။ Real-time Sync အလုပ်လုပ်တဲ့ အပိုင်း
-db.collection('thel_kokoe_world').onSnapshot((snapshot) => {
-  document.getElementById('syncDot').classList.add('active');
-  if(document.getElementById('syncDotMobile')) document.getElementById('syncDotMobile').classList.add('active');
-
-  snapshot.docs.forEach(doc => { records[doc.id] = doc.data().value; });
-  
-  for(const [k,v] of Object.entries(defaults)) {
-    if(records[k] === undefined) records[k] = v;
-  }
-  
-  renderAll();
-}, (error) => {
-  console.error("Firebase Sync Error: ", error);
-  document.getElementById('syncDot').classList.remove('active');
-  if(document.getElementById('syncDotMobile')) document.getElementById('syncDotMobile').classList.remove('active');
-});
-
-// ၃။ Data တွေကို Firebase ဆီ ပို့သိမ်းတဲ့ အပိုင်း
-async function save(k, v) {
-  records[k] = v;
+// ၁။ Google Sheet မှ Data များ ဆွဲယူခြင်း
+async function getAll(){
   try {
-    await db.collection('thel_kokoe_world').doc(k).set({ value: v });
-  } catch (err) {
-    console.error(err);
-  }
+    const res = await fetch(SCRIPT_URL + '?action=getAll');
+    const data = await res.json();
+    for(let key in data){
+      try{ records[key] = JSON.parse(data[key]); } catch(e){}
+    }
+  } catch(e) { console.error("Load Error:", e); }
 }
 
-// ၄။ ဓာတ်ပုံတွေကို Google Drive ဆီ တင်တဲ့ အပိုင်း
+// ၂။ ၅ စက္ကန့်တစ်ခါ အလိုအလျောက် Auto-Sync လုပ်ပေးမည့်စနစ်
+async function startAutoSync() {
+  setInterval(async () => {
+    document.getElementById('syncDot').classList.add('active');
+    if(document.getElementById('syncDotMobile')) document.getElementById('syncDotMobile').classList.add('active');
+    
+    await getAll();
+    renderAll();
+    
+    setTimeout(() => {
+      document.getElementById('syncDot').classList.remove('active');
+      if(document.getElementById('syncDotMobile')) document.getElementById('syncDotMobile').classList.remove('active');
+    }, 1000);
+  }, 5000);
+}
+
+// ၃။ Google Sheet သို့ စာသား/အချက်အလက်များ သိမ်းဆည်းခြင်း
+async function put(key,value){
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({action: 'save', key: key, value: JSON.stringify(value)})
+    });
+  } catch(e) { console.error("Save Error:", e); }
+}
+
+async function save(k,v){
+  records[k] = v;
+  renderAll();
+  await put(k,v);
+}
+
+// ၄။ Google Drive သို့ ပုံများ တင်ခြင်း
 async function uploadFile(file) {
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNNiyvnPThUNcPU8rx4WrSuXzGfZv90cJza2J4jkgsj3IlnO0tzvbrQt5iXgoEKVko/exec"; 
-  
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = async () => {
@@ -163,6 +161,7 @@ async function uploadFile(file) {
         const res = await fetch(SCRIPT_URL, {
           method: 'POST',
           body: JSON.stringify({
+            action: 'uploadImage',
             base64: base64Str,
             mimeType: file.type,
             filename: file.name || ('memory_' + Date.now() + '.jpg')
@@ -170,7 +169,7 @@ async function uploadFile(file) {
         });
         const data = await res.json();
         if(data.url) resolve(data.url);
-        else reject(data.error || "Upload Error");
+        else reject(data.error);
       } catch(e) { reject(e); }
     };
     reader.onerror = reject;
@@ -178,7 +177,21 @@ async function uploadFile(file) {
   });
 }
 
-// ၅။ UI & Click လုပ်ဆောင်ချက်များ
+// ၅။ App စတင်ခြင်း
+async function init(){
+  try {
+    await getAll();
+    for(const [k,v] of Object.entries(defaults)){
+      if(records[k]===undefined){ records[k]=v; await put(k,v); }
+    }
+    renderAll();
+    startAutoSync();
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+// ၆။ UI & လုပ်ဆောင်ချက်များ
 function unlock(){if(document.getElementById('passcode').value==='120926'){document.getElementById('lockScreen').style.display='none';document.getElementById('app').style.display='block';}else document.getElementById('lockError').textContent='That code is not quite right. Try again ♡'}
 document.getElementById('passcode').addEventListener('keydown',e=>{if(e.key==='Enter')unlock()});
 function lockAgain(){document.getElementById('app').style.display='none';document.getElementById('lockScreen').style.display='grid';document.getElementById('passcode').value=''}
@@ -188,7 +201,6 @@ function openModal(id){document.getElementById(id).classList.add('show')}
 function closeModal(id){document.getElementById(id).classList.remove('show')}
 function chooseImage(id){document.getElementById(id).click()}
 
-// Profile နဲ့ Main ပုံပြောင်းခြင်း
 async function saveSingleImage(e,key){
   const f = e.target.files[0];
   if(!f) return;
@@ -228,7 +240,6 @@ document.getElementById('albumForm').onsubmit=async e=>{e.preventDefault();const
 
 function renderPhotos(){const el=document.getElementById('photoGrid'),pics=records['photos_'+currentAlbum]||[];if(!pics.length){el.innerHTML='<div class="empty">No photos in this album yet. Add your first memory ♡</div>';return}el.innerHTML=pics.map((p,i)=>`<div class="polaroid" style="--tilt:${i%2===0?'-1deg':'1deg'}"><img src="${p.image}" alt="Memory"><div class="polaroid-note" style="font-family:'${p.font||'Allura'}'">${escapeHTML(p.note||'A little moment with you ♡')}</div><div class="photo-actions"><a href="${p.image}" target="_blank" class="soft" style="text-decoration:none">View</a><button class="danger" onclick="deletePhoto('${p.id}')">Delete</button></div></div>`).join('')}
 
-// Album ထဲကို ပုံထည့်ခြင်း
 document.getElementById('photoForm').onsubmit=async e=>{
   e.preventDefault();
   const f=photoFile.files[0];
@@ -263,6 +274,7 @@ async function deleteLetter(id){if(!confirm('Delete this letter?'))return;await 
 function escapeHTML(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function renderAll(){renderImages();renderProfile('kokoe');renderProfile('thel');renderCounter();renderPlans();if(currentAlbum){renderPhotos()}else{renderAlbums()}renderLetters()}
 
+init();
 </script>
 </body>
 </html>
