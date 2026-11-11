@@ -41,7 +41,7 @@ h1,h2,h3,p{margin-top:0}h1{font:clamp(38px,5vw,58px) 'Cormorant Garamond';font-w
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form-row{display:flex;flex-direction:column;gap:6px;margin:10px 0}.form-row label{font-size:11px;letter-spacing:1px;color:#a17f8e;text-transform:uppercase}.form-row input,.form-row textarea,.form-row select{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px;color:var(--ink);background:#fffdfd;outline-color:#e9a5bd}.form-row textarea{min-height:95px;resize:vertical}
 .empty{text-align:center;padding:35px;color:#b294a1;background:#faf7f6;border:1px dashed #edcfdb;border-radius:16px;font-size:13px}
 .mobile-title{display:none}
-@media(max-width:760px){.sidebar{width:100%;height:68px;inset:auto 0 0;padding:6px 8px;flex-direction:row;justify-content:space-around;border-right:0;border-top:1px solid var(--line)}.brand,.brand-sub,.nav-label,.sidebar-bottom{display:none}.nav-btn{font-size:11px;text-align:center;padding:9px 7px;margin:0;flex:1}.nav-btn span{display:block;font-size:17px;margin-bottom:2px}main{margin:0;padding:25px 16px 95px}.mobile-title{display:block;font:25px 'Allura';color:var(--rose);margin-bottom:12px}.hero{padding:24px;min-height:0;flex-direction:column-reverse;align-items:stretch}.hero-photo{width:100%;height:220px}.grid{grid-template-columns:1fr}.profile{grid-template-columns:95px 1fr;gap:12px}.avatar{width:95px;height:115px}.profile-fields{grid-template-columns:1fr 1fr}.counter{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}.section-head{align-items:flex-start}}
+@media(max-width:760px){.sidebar{width:100%;height:68px;inset:auto 0 0;padding:6px 8px;flex-direction:row;justify-content:space-around;border-right:0;border-top:1px solid var(--line)}.brand,.brand-sub,.nav-label,.sidebar-bottom{display:none}.nav-btn{font-size:11px;text-align:center;padding:9px 7px;margin:0;flex:1}.nav-btn span{display:block;font-size:17px;margin-bottom:2px}main{margin:0;padding:25px 16px 95px}.mobile-title{display:block;font:25px 'Allura';color:var(--rose);margin-bottom:12px; display:flex; align-items:center; gap:8px}.hero{padding:24px;min-height:0;flex-direction:column-reverse;align-items:stretch}.hero-photo{width:100%;height:220px}.grid{grid-template-columns:1fr}.profile{grid-template-columns:95px 1fr;gap:12px}.avatar{width:95px;height:115px}.profile-fields{grid-template-columns:1fr 1fr}.counter{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}.section-head{align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -53,7 +53,8 @@ h1,h2,h3,p{margin-top:0}h1{font:clamp(38px,5vw,58px) 'Cormorant Garamond';font-w
 </div>
 <div class="app" id="app">
  <aside class="sidebar">
-  <div class="brand">Thel & Kokoe</div><div class="brand-sub">OUR LITTLE WORLD <div class="sync-dot" id="syncDot" title="Sync Status"></div></div>
+  <div class="brand">Thel & Kokoe</div>
+  <div class="brand-sub">OUR LITTLE WORLD <div class="sync-dot" id="syncDot" title="Sync Status"></div></div>
   <div class="nav-label">OUR SPACE</div>
   <button class="nav-btn active" data-page="home" onclick="goPage('home')"><span>⌂</span>Home</button>
   <button class="nav-btn" data-page="days" onclick="goPage('days')"><span>♡</span>Our Days</button>
@@ -97,12 +98,11 @@ h1,h2,h3,p{margin-top:0}h1{font:clamp(38px,5vw,58px) 'Cormorant Garamond';font-w
 <div class="modal" id="photoModal"><div class="modal-card"><div class="modal-head"><h2>Add a memory</h2><button class="close" onclick="closeModal('photoModal')">×</button></div><form id="photoForm"><div class="form-row"><label>Choose photo</label><input id="photoFile" type="file" accept="image/*" required></div><div class="form-row"><label>Note under your Polaroid</label><textarea id="photoNote" placeholder="A little note about this memory..."></textarea></div><div class="form-row"><label>Font style</label><select id="photoFont"><option value="Allura">Soft script — Allura</option><option value="Cormorant Garamond">Editorial — Cormorant</option><option value="Manrope">Minimal — Manrope</option></select></div><button class="primary" type="submit">Save memory</button></form></div></div>
 <div class="modal" id="letterModal"><div class="modal-card"><div class="modal-head"><h2>Leave a little letter ♡</h2><button class="close" onclick="closeModal('letterModal')">×</button></div><form id="letterForm"><div class="form-grid"><div class="form-row"><label>From</label><select id="letterFrom"><option>Thel</option><option>Kokoe</option></select></div><div class="form-row"><label>To</label><select id="letterTo"><option>Kokoe</option><option>Thel</option></select></div></div><div class="form-row"><label>Your message</label><textarea id="letterBody" required placeholder="There's something I want to tell you..."></textarea></div><button class="primary" type="submit">Leave this letter</button></form></div></div>
 
-<!-- FIREBASE SDK (For Realtime Text Data Sync) -->
+<!-- FIREBASE SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
 <script>
-// ၁။ အစ်ကို့ရဲ့ Firebase Config (စာသားများ သိမ်းရန်)
 const firebaseConfig = {
   apiKey: "AIzaSyCgf2Ad0H1ZB8VpFZCqh79NFvdrCW0EgqE",
   authDomain: "ahhalovecounter.firebaseapp.com",
@@ -112,7 +112,7 @@ const firebaseConfig = {
   appId: "1:678032617022:web:2aa079f20bbacccf342b6f"
 };
 
-// Firebase စတင်ခြင်း
+// Firebase ကို ဖွင့်ခြင်း
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
@@ -123,11 +123,10 @@ const defaults = {
  albums:[],plans:[],letters:[]
 };
 
-// ၂။ Real-time Sync (Firestore) - ဘာပြောင်းပြောင်း ချက်ချင်းသိပြီး Update လုပ်မည့်အပိုင်း
+// ၂။ Real-time Sync အလုပ်လုပ်တဲ့ အပိုင်း
 db.collection('thel_kokoe_world').onSnapshot((snapshot) => {
-  // Sync အလုပ်လုပ်ကြောင်း အစိမ်းရောင်မီးလေး လင်းပြပါမည်
   document.getElementById('syncDot').classList.add('active');
-  document.getElementById('syncDotMobile').classList.add('active');
+  if(document.getElementById('syncDotMobile')) document.getElementById('syncDotMobile').classList.add('active');
 
   snapshot.docs.forEach(doc => { records[doc.id] = doc.data().value; });
   
@@ -135,27 +134,25 @@ db.collection('thel_kokoe_world').onSnapshot((snapshot) => {
     if(records[k] === undefined) records[k] = v;
   }
   
-  renderAll(); // အပြောင်းအလဲရှိတိုင်း UI ပေါ်ချက်ချင်းပေါ်စေသည်
+  renderAll();
 }, (error) => {
   console.error("Firebase Sync Error: ", error);
   document.getElementById('syncDot').classList.remove('active');
-  document.getElementById('syncDotMobile').classList.remove('active');
+  if(document.getElementById('syncDotMobile')) document.getElementById('syncDotMobile').classList.remove('active');
 });
 
-// ၃။ Firebase သို့ Data များ ရေးသွင်းခြင်း (Sync လုပ်ခြင်း)
+// ၃။ Data တွေကို Firebase ဆီ ပို့သိမ်းတဲ့ အပိုင်း
 async function save(k, v) {
   records[k] = v;
   try {
     await db.collection('thel_kokoe_world').doc(k).set({ value: v });
   } catch (err) {
-    alert("Database သို့ သိမ်းဆည်းရန် ခွင့်ပြုချက်မရှိပါ။ Firebase Rules ကို true ဟု ပြင်ထားရန် မေ့နေပါသလား?");
     console.error(err);
   }
 }
 
-// ၄။ Google Drive သို့ ဓာတ်ပုံများ သိမ်းဆည်းခြင်း
+// ၄။ ဓာတ်ပုံတွေကို Google Drive ဆီ တင်တဲ့ အပိုင်း
 async function uploadFile(file) {
-  // အစ်ကို့ရဲ့ Google Apps Script URL 
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNNiyvnPThUNcPU8rx4WrSuXzGfZv90cJza2J4jkgsj3IlnO0tzvbrQt5iXgoEKVko/exec"; 
   
   return new Promise((resolve, reject) => {
@@ -173,7 +170,7 @@ async function uploadFile(file) {
         });
         const data = await res.json();
         if(data.url) resolve(data.url);
-        else reject(data.error);
+        else reject(data.error || "Upload Error");
       } catch(e) { reject(e); }
     };
     reader.onerror = reject;
@@ -204,7 +201,7 @@ async function saveSingleImage(e,key){
     const url = await uploadFile(f);
     await save(key, url);
   } catch(err) {
-    alert("ဓာတ်ပုံတင်ခြင်း မအောင်မြင်ပါ - " + err.message);
+    alert("ဓာတ်ပုံတင်ခြင်း မအောင်မြင်ပါ - " + err);
   }
   el.style.opacity = '1';
   e.target.value='';
@@ -250,7 +247,7 @@ document.getElementById('photoForm').onsubmit=async e=>{
     e.target.reset();
     closeModal('photoModal');
   } catch (err) {
-    alert("ဓာတ်ပုံတင်ခြင်း မအောင်မြင်ပါ - " + err.message);
+    alert("ဓာတ်ပုံတင်ခြင်း မအောင်မြင်ပါ - " + err);
   }
   
   submitBtn.textContent = "Save memory";
